@@ -5,6 +5,8 @@ from matplotlib import pyplot as plt
 # from gym.wrappers import VideoRecorder
 from dqn import DQN
 from drqn import DRQN
+from reinforce import REINFORCE, PiApproximationWithNN, Baseline, VApproximationWithNN
+from MCTS import
 
 def test_DQN():
     env = gym.make("CartPole-v0")
@@ -18,7 +20,16 @@ def test_DRQN():
     
     return DRQN(env,gamma,1000,pi)
 
-from reinforce import REINFORCE, PiApproximationWithNN, Baseline, VApproximationWithNN
+
+def test_MCTS():
+    X = StateActionFeatureVectorWithTile(
+        env.observation_space.low,
+        env.observation_space.high,
+        env.action_space.n,
+        num_tilings=10,
+        tile_width=np.array([.45, .035])
+    )
+    
 
 def test_reinforce(with_baseline):
     env = gym.make("CartPole-v0")
@@ -57,6 +68,8 @@ def play(env,pi,num_episodes=10,video_path=None):
             s = s_prime
     # video_recorder.close()
     # video_recorder.enabled = False
+    
+
 
 if __name__ == "__main__":
     num_iter = 1
