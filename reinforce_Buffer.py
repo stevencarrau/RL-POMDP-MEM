@@ -15,8 +15,10 @@ class ReplayMemory:
     def add(self,observation,reward,action):
         self.actions[self.current] = action
         self.rewards[self.current] = reward
-        self.observations[self.current] = observation
         self.count = max(self.count,self.current+1)
+        for i in range(self.count-1):
+            self.observations[i] = self.observations[i+1]
+        self.observations[-1] = observation
         self.current = (self.current+1)%self.config.mem_size
 
     def getState(self,index):
@@ -28,7 +30,8 @@ class PiApproximationWithNN():
     def __init__(self,
                  state_dims,
                  num_actions,
-                 alpha):
+                 alpha,
+                 mem_size):
         """
         state_dims: the number of dimensions of state space
         action_dims: the number of possible actions
@@ -37,7 +40,7 @@ class PiApproximationWithNN():
         # TODO: implement here
         self.state_dims = state_dims
         self.obs_dims = int(state_dims/2)
-        self.buffer_size = 2
+        self.buffer_size = mem_size
         self.num_actions = num_actions
         self.alpha = alpha
         beta1 = 0.9
@@ -147,7 +150,8 @@ def REINFORCE(
     gamma:float,
     num_episodes:int,
     pi:PiApproximationWithNN,
-    V:Baseline) -> Iterable[float]:
+    V:Baseline,
+    mem_size:int) -> Iterable[float]:
     """
     implement REINFORCE algorithm with and without baseline.
 
@@ -162,7 +166,7 @@ def REINFORCE(
     """
     G_0 = []
     struc = namedtuple("struc",['mem_size','obs_dims'])
-    config = struc(2,2)
+    config = struc(mem_size,2)
     rep = ReplayMemory(config)
     pi.add_config(config)
     obs_mask = np.array([[1,0,0,0],[0,0,1,0]])
@@ -170,6 +174,7 @@ def REINFORCE(
         if G_0:print("{} - {}".format(e_i,max(G_0)))
         s = env.reset()
         z = np.matmul(obs_mask,s)
+        rep.add(z, 0, 0)
         done = False
         traj = []
         while not done:
@@ -177,10 +182,10 @@ def REINFORCE(
             # if a ==1: print("A1")
             s_prime, r_t, done, _ = env.step(a)
             z_prime = np.matmul(obs_mask, s_prime)
-            rep_s = rep.getState(rep.current)
-            rep.add(z,r_t,a)
-            rep_sprime = rep.getState(rep.current)
-            traj.append((rep_s,a,r_t,rep_sprime))
+            rep_z = rep.getState(rep.current)
+            rep.add(z_prime,r_t,a)
+            rep_zprime = rep.getState(rep.current)
+            traj.append((rep_z,a,r_t,rep_zprime))
             z = z_prime
         for i,t_tup in enumerate(traj):
             G = sum([gamma**j*s_tup[2] for j,s_tup in enumerate(traj[i:])])
