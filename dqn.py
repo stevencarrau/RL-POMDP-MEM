@@ -23,7 +23,7 @@ class DQNetwork:
 		# Relu hidden layers
 		self.layer1 = tf.contrib.layers.fully_connected(self.inputs_, hidden_size)
 		self.layer2 = tf.contrib.layers.fully_connected(self.layer1, hidden_size)
-		self. output = tf.contrib.layers.fully_connected(self.layer2, action_size, activation_fn=None)
+		self.output = tf.contrib.layers.fully_connected(self.layer2, action_size, activation_fn=None)
 
 		self.actSel = tf.argmax(self.output,1)
 

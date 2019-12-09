@@ -10,6 +10,7 @@ class DRQNetwork:
 		self.state_size = state_size
 		self.obs_size = state_size
 		self.act_size = action_size
+		self.seq_length = seq_length
 		# State inputs to the Q-Network
 		self.inputs_ = tf.placeholder(tf.float32, [None,seq_length, state_size])
 
@@ -25,7 +26,7 @@ class DRQNetwork:
 		# RNN stuff
 		lstm_layer = tf.keras.layers.LSTM(hidden_size, input_shape=(None, hidden_size))(self.layer1)
 		self.layer2 = tf.contrib.layers.fully_connected(lstm_layer, hidden_size)
-		self. output = tf.contrib.layers.fully_connected(self.layer2, action_size, activation_fn=None)
+		self.output = tf.contrib.layers.fully_connected(self.layer2, action_size, activation_fn=None)
 
 		self.actSel = tf.argmax(self.output,1)
 
@@ -37,8 +38,18 @@ class DRQNetwork:
 		self.sess = tf.InteractiveSession()
 		self.sess.run(self.init)
 
-	def __call__(self, s):
-		pred = self.sess.run(self.actSel, feed_dict={self.inputs_: s.reshape(-1, self.state_size)})
+	def __call__(self, z,memory):
+		i = 0
+		in_seq = []
+		while i < self.seq_length-1:
+			t_i = memory.buffer[-1-i]
+			if (t_i[3] == np.zeros(self.state_size)).all(): break
+			in_seq.append(t_i[0])
+			i += 1
+		in_seq.append(z)
+		s = tf.keras.preprocessing.sequence.pad_sequences(np.array(in_seq).T, maxlen=self.seq_length,
+													  dtype='float64', padding='pre', truncating='pre', value=0.0).reshape(1,-1,self.state_size)
+		pred = self.sess.run(self.actSel, feed_dict={self.inputs_: s})
 		return pred[0]
 
 
@@ -141,7 +152,7 @@ def DRQN(env,gamma,num_episodes=100):
 				action = env.action_space.sample()
 			else:
 				# Action from Q Network
-				action = QN(state)
+				action = QN(z,memory)
 
 			# Take action
 			state_prime, reward, done, _ = env.step(action)
@@ -174,8 +185,9 @@ def DRQN(env,gamma,num_episodes=100):
 			# Sample mini-batch from memory
 			batch = memory.sample(batch_size,seq_length=seq_length)
 			zs = np.array([tf.keras.preprocessing.sequence.pad_sequences(np.array([each[0] for each in sub_batch]).T,maxlen=seq_length,dtype='float64', padding='pre', truncating='pre', value=0.0).T for sub_batch in batch])
-			actions = np.array([tf.keras.preprocessing.sequence.pad_sequences(np.array([[each[1]] for each in sub_batch]).T,maxlen=seq_length,dtype='float64', padding='pre', truncating='pre', value=0.0).T for sub_batch in batch])
-			rewards = np.array([tf.keras.preprocessing.sequence.pad_sequences(np.array([[each[2]] for each in sub_batch]).T,maxlen=seq_length,dtype='float64', padding='pre', truncating='pre', value=0.0).T for sub_batch in batch])
+			# actions = np.array([tf.keras.preprocessing.sequence.pad_sequences(np.array([[each[1]] for each in sub_batch]).T,maxlen=seq_length,dtype='float64', padding='pre', truncating='pre', value=0.0).T for sub_batch in batch])
+			actions = np.array([sub_batch[-1][1] for sub_batch in batch])
+			rewards = np.array([sub_batch[-1][2] for sub_batch in batch])
 			z_primes = np.array([tf.keras.preprocessing.sequence.pad_sequences(np.array([each[3] for each in sub_batch]).T,maxlen=seq_length,dtype='float64', padding='pre', truncating='pre', value=0.0).T for sub_batch in batch])
 
 			# Train Network
