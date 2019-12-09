@@ -9,7 +9,7 @@ class DQNetwork:
     def __init__(self, state_size=2, action_size=2, hidden_size=10, learning_rate=0.01, name='DQNetwork'):
         with tf.variable_scope(name):
             # State inputs to the Q-Network
-            self.inputs_ = tf.placeholder(tf.float32, [None, state_size], name='inputs')
+            self.inputs_ = tf.placeholder(tf.float32, [None,1, state_size], name='inputs')
 
             # One hot encode the actions to later choose the Q value for the action
             self.actions_ = tf.placeholder(tf.int32, [None], name='actions')
@@ -28,9 +28,9 @@ class DQNetwork:
             # Relu hidden layers
             self.layer1 = tf.contrib.layers.fully_connected(self.inputs_, hidden_size)
             # RNN stuff
-            lstm_layer = tf.keras.layers.LSTM(hidden_size, input_shape=(None, hidden_size))
-            # lstm_cell = tf.keras.layers.LSTMCell(hidden_size, input_shape=(None, ))
-            # lstm_outputs, _ = tf.keras.layers.RNN(lstm_cell, self.layer1, dtype=tf.float32)
+            lstm_layer = tf.keras.layers.LSTM(hidden_size, input_shape=(None, hidden_size))(self.layer1)
+            # lstm_cell = tf.keras.layers.LSTMCell(hidden_size, input_shape=(None, self.inputs_))
+            # lstm_outputs = tf.keras.layers.RNN(lstm_cell, self.inputs_, dtype=tf.float32)(self.inputs_)
             # - #
             self.layer3 = tf.contrib.layers.fully_connected(lstm_layer, hidden_size)
             self. output = tf.contrib.layers.fully_connected(self.layer3, action_size, activation_fn=None)
@@ -153,7 +153,7 @@ if __name__ == "__main__":
                         action = env.action_space.sample()
                     else:
                         # Action from Q Network
-                        Qs = sess.run(QN.output, feed_dict={QN.inputs_: z.reshape((1, *z.shape))})
+                        Qs = sess.run(QN.output, feed_dict={QN.inputs_: z.reshape((-1,1, *z.shape))})
                         action = np.argmax(Qs)
 
                     # Take action
@@ -200,7 +200,7 @@ if __name__ == "__main__":
                     z_primes = np.array([each[3] for each in batch])
 
                     # Train Network
-                    Q_target = sess.run(QN.output, feed_dict={QN.inputs_: z_primes})
+                    Q_target = sess.run(QN.output, feed_dict={QN.inputs_: z_primes.reshape(-1,1,2)})
 
                     # Set Q_target to 0 for states where episode ends
                     episode_ends = (z_primes == np.zeros(z[0].shape)).all(axis=1)
@@ -209,7 +209,7 @@ if __name__ == "__main__":
                     targets = rewards + gamma*np.max(Q_target, axis=1)
                     loss, _ = sess.run([QN.loss, QN.optimizer],
                                        feed_dict={
-                                           QN.inputs_: zs,
+                                           QN.inputs_: zs.reshape(-1,1,2),
                                            QN.Q_target: targets,
                                            QN.actions_: actions
                                        })
