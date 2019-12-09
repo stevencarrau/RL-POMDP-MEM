@@ -28,10 +28,11 @@ class DQNetwork:
             # Relu hidden layers
             self.layer1 = tf.contrib.layers.fully_connected(self.inputs_, hidden_size)
             # RNN stuff
-            lstm_cell = tf.keras.layers.LSTMCell(hidden_size)
-            lstm_outputs, _ = tf.keras.layers.RNN(lstm_cell, self.layer1, dtype=tf.float32)
+            lstm_layer = tf.keras.layers.LSTM(hidden_size, input_shape=(None, hidden_size))
+            # lstm_cell = tf.keras.layers.LSTMCell(hidden_size, input_shape=(None, ))
+            # lstm_outputs, _ = tf.keras.layers.RNN(lstm_cell, self.layer1, dtype=tf.float32)
             # - #
-            self.layer3 = tf.contrib.layers.fully_connected(lstm_outputs, hidden_size)
+            self.layer3 = tf.contrib.layers.fully_connected(lstm_layer, hidden_size)
             self. output = tf.contrib.layers.fully_connected(self.layer3, action_size, activation_fn=None)
 
             # Train with loss (Q_target - Q)^2
