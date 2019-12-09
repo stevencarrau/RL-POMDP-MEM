@@ -192,7 +192,7 @@ if __name__ == "__main__":
     dqn_result = np.mean(dqn_list,axis=0)
     # # Plot the experiment result
     fig,ax = plt.subplots()
-    ax.plot(np.arange(len(without_buffer)),without_buffer, label='No Buffer')
+    ax.plot(np.arange(len(dqn_result)),dqn_result, label='No Buffer')
 
     # Test DRQN
 
