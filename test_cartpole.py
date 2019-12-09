@@ -51,7 +51,7 @@ def test_reinforce(with_baseline):
     else:
         B = Baseline(0.)
 
-    return REINFORCE(env,gamma,1000,pi,B)
+    return REINFORCE(env,gamma,10000,pi,B)
     
 
 def test_reinforce_Buffer(with_baseline,mem_size):
@@ -76,7 +76,7 @@ def test_reinforce_Buffer(with_baseline,mem_size):
     else:
         B = Baseline(0.)
 
-    return RF_Buffer(env,gamma,1000,pi,B,mem_size)
+    return RF_Buffer(env,gamma,10000,pi,B,mem_size)
 
 def play_obs(env,pi,num_episodes=10,video_path=None):
     # video_recorder = VideoRecorder(env,video_path,enabled=video_path is not None)
@@ -149,6 +149,9 @@ if __name__ == "__main__":
     #
     # without_buffer = []
     # for q in range(num_iter):
+    #     print('***************************************')
+    #     print("----------------> Without Buffer: {}".format(q))
+    #     print('***************************************')
     #     training_progress = test_reinforce(with_baseline=False)
     #     without_buffer.append(training_progress[0])
     #     pi = training_progress[1]
@@ -159,6 +162,9 @@ if __name__ == "__main__":
     # # Test REINFORCE_buffer size 2 and 5
     # with_buffer2 = []
     # for q in range(num_iter):
+    #     print('***************************************')
+    #     print("----------------> With Buffer = 2: {}".format(q))
+    #     print('***************************************')
     #     training_progress = test_reinforce_Buffer(False,2)
     #     with_buffer2.append(training_progress[0])
     #     pi_buff = training_progress[1]
@@ -167,6 +173,9 @@ if __name__ == "__main__":
     #
     # with_buffer5 = []
     # for q in range(num_iter):
+    #     print('***************************************')
+    #     print("----------------> With Buffer = 5: {}".format(q))
+    #     print('***************************************')
     #     training_progress = test_reinforce_Buffer(False,5)
     #     with_buffer5.append(training_progress[0])
     #     pi_buff = training_progress[1]
@@ -206,8 +215,6 @@ if __name__ == "__main__":
     # # # Plot the experiment result
     # fig,ax = plt.subplots()
     # ax.plot(np.arange(len(dqn_result)),dqn_result, label='No Buffer')
-
-    # Test DRQN
 
 
     # Plot the experiment result
