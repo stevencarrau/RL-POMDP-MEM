@@ -15,9 +15,9 @@ def test_DQN(env):
     
     return DQN(env,gamma,1000)
 
-def test_DRQN():
-    
-    return DRQN(env,gamma,1000,pi)
+def test_DRQN(env):
+    gamma = 1.0
+    return DRQN(env,gamma,1000)
 
 
 def test_MCTS():
@@ -110,7 +110,7 @@ def play_with_buffer(env,pi,num_episodes=10,video_path=None):
         # video_recorder.capture_frame()
         done = False
         while not done:
-            a = int(pi(rep.getState(rep.current)))
+            a = int(pi(rep.getState()))
             s_prime, r_t, done, _ = env.step(a)
             z_prime = np.matmul(obs_mask, s_prime)
             rep.add(z_prime,r_t,a)
@@ -150,9 +150,9 @@ if __name__ == "__main__":
     #     without_buffer.append(training_progress[0])
     #     pi = training_progress[1]
     # without_buffer = np.mean(without_buffer,axis=0)
-    # play(env,pi)
-    #
-    #
+    # # play(env,pi)
+    # #
+    # #
     # # Test REINFORCE_buffer size 2 and 5
     # with_buffer2 = []
     # for q in range(num_iter):
@@ -174,33 +174,43 @@ if __name__ == "__main__":
     # fig,ax = plt.subplots()
     # ax.plot(np.arange(len(without_buffer)),without_buffer, label='No Buffer')
     # ax.plot(np.arange(len(with_buffer2)),with_buffer2, label='Buffer - Size 2')
-    # ax.plot(np.arange(len(with_buffer5)),with_buffer5, label='Buffer - Size 5')
-    #
+    # # ax.plot(np.arange(len(with_buffer5)),with_buffer5, label='Buffer - Size 5')
+    # #
     # ax.set_xlabel('iteration')
     # ax.set_ylabel('G_0')
     # ax.legend()
-    #
+    # #
     # plt.show()
 
     # Test DQN
-    dqn_list = []
-    dqn_policies = []
+    # dqn_list = []
+    # dqn_policies = []
+    # for q in range(num_iter):
+    #     dqn_rew, dqn_pi = test_DQN(env)
+    #     dqn_list.append(dqn_rew)
+    #     dqn_policies.append(dqn_pi)
+    # dqn_result = np.mean(dqn_list,axis=0)
+
+    # Test DRQN
+    drqn_list = []
+    drqn_policies = []
     for q in range(num_iter):
-        dqn_rew, dqn_pi = test_DQN(env)
-        dqn_list.append(dqn_rew)
-        dqn_policies.append(dqn_pi)
-    dqn_result = np.mean(dqn_list,axis=0)
-    # # Plot the experiment result
-    fig,ax = plt.subplots()
-    ax.plot(np.arange(len(dqn_result)),dqn_result, label='No Buffer')
+        drqn_rew, drqn_pi = test_DRQN(env)
+        drqn_list.append(drqn_rew)
+        drqn_policies.append(drqn_pi)
+    dqn_result = np.mean(drqn_list, axis=0)
+
+    # # # Plot the experiment result
+    # fig,ax = plt.subplots()
+    # ax.plot(np.arange(len(dqn_result)),dqn_result, label='No Buffer')
 
     # Test DRQN
 
 
     # Plot the experiment result
-    # fig,ax = plt.subplots()
-    # ax.plot(np.arange(len(dqn_output)),dqn_output, label='DQN')
-    # ax.plot(np.arange(len(drqn_output)),drqn_output, label='DRQN')
+    fig,ax = plt.subplots()
+    ax.plot(np.arange(len(dqn_output)),dqn_output, label='DQN')
+    ax.plot(np.arange(len(drqn_output)),drqn_output, label='DRQN')
     #
     ax.set_xlabel('iteration')
     ax.set_ylabel('G_0')

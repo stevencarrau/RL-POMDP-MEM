@@ -75,12 +75,13 @@ def DQN(env,gamma,num_episodes=100):
 
 	# Runs
 
-	QN = DQNetwork(hidden_size=hidden_size, learning_rate=learning_rate)
+	QN = DQNetwork(state_size=2,hidden_size=hidden_size, learning_rate=learning_rate)
 
 	obs_mask = np.array([[1, 0, 0, 0], [0, 0, 1, 0]])
 	env.reset()
 	# Random step to start
 	state, reward, done, _ = env.step(env.action_space.sample())
+	z = np.matmul(obs_mask, state)
 	memory = Memory(max_size=memory_size)
 	# Pre-train to fill memory
 	for i in range(pretrain_length):
@@ -90,19 +91,22 @@ def DQN(env,gamma,num_episodes=100):
 		# Take random action
 		action = env.action_space.sample()
 		state_prime, reward, done, _ = env.step(action)
+		z_prime = np.matmul(obs_mask, state_prime)
 
 		if done:
 			# Sim is done so no state prime
 			state_prime = np.zeros(state.shape)
-			memory.add((state, action, reward, state_prime))
+			z_prime = np.matmul(obs_mask, state_prime)
+			memory.add((z, action, reward, z_prime))
 			# Start new episode
 			env.reset()
 			# Random step to start
 			state, reward, done, _ = env.step(env.action_space.sample())
+			z = np.matmul(obs_mask, state)
 		else:
 			# Add experience to memory
-			memory.add((state, action, reward, state_prime))
-			state = state_prime
+			memory.add((z, action, reward, z_prime))
+			z = z_prime
 
 	exp_step = 0
 	G_0 = []
@@ -111,6 +115,7 @@ def DQN(env,gamma,num_episodes=100):
 		env.reset()
 		# Take random step to start
 		state, reward, done, _ = env.step(env.action_space.sample())
+		z = np.matmul(obs_mask, state)
 		total_reward = 0
 		t = 0
 		done = False
@@ -130,12 +135,14 @@ def DQN(env,gamma,num_episodes=100):
 
 			# Take action
 			state_prime, reward, done, _ = env.step(action)
+			z_prime = np.matmul(obs_mask, state_prime)
 			total_reward += reward
 
 			# Store transition
 			if done:
 				# Episode is over so no state prime
 				state_prime = np.zeros(state.shape)
+				z_prime = np.matmul(obs_mask, state_prime)
 
 				# print('Episode: {}'.format(episode),
 				#       'Total Reward: {}'.format(total_reward),
@@ -146,36 +153,36 @@ def DQN(env,gamma,num_episodes=100):
 				# epis[0].append(episode)
 
 				# Add experience to memory
-				memory.add((state, action, reward, state_prime))
+				memory.add((z, action, reward, z_prime))
 
 			else:
 				# Add experience to memory
-				memory.add((state, action, reward, state_prime))
-				state = state_prime
+				memory.add((z, action, reward, z_prime))
+				z = z_prime
 				t += 1
 
 			# Sample mini-batch from memory
 			batch = memory.sample(batch_size)
-			states = np.array([each[0] for each in batch])
+			zs = np.array([each[0] for each in batch])
 			actions = np.array([each[1] for each in batch])
 			rewards = np.array([each[2] for each in batch])
-			state_primes = np.array([each[3] for each in batch])
+			z_primes = np.array([each[3] for each in batch])
 
 			# Train Network
-			Q_target = QN.sess.run(QN.output, feed_dict={QN.inputs_: state_primes})
+			Q_target = QN.sess.run(QN.output, feed_dict={QN.inputs_: z_primes})
 
 			# Set Q_target to 0 for states where episode ends
-			episode_ends = (state_primes == np.zeros(state[0].shape)).all(axis=1)
+			episode_ends = (z_primes == np.zeros(state[0].shape)).all(axis=1)
 			Q_target[episode_ends] = (0, 0)
 
 			targets = rewards + gamma * np.max(Q_target, axis=1)
 			loss, _ = QN.sess.run([QN.loss, QN.optimizer],
 							   feed_dict={
-								   QN.inputs_: states,
+								   QN.inputs_: zs,
 								   QN.Q_target: targets,
 								   QN.actions_: actions
 							   })
 		G_0.append(total_reward)
 
 	print("Max G_0 {}".format(max(G_0)))
-	return G_0,QN
+	return G_0, QN
