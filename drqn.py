@@ -207,4 +207,5 @@ def DRQN(env,gamma,num_episodes=100):
 		G_0.append(total_reward)
 
 	print("Max G_0 {}".format(max(G_0)))
+	QN.sess.close()
 	return G_0, QN
