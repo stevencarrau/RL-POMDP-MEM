@@ -77,13 +77,6 @@ def DQN(env,gamma,num_episodes=100):
 
 	# Video Path
 	video_path = 'videos/dqn_run_ep_.mp4'
-	# videos = []
-	# video_recorder_1 = None
-	# video_recorder_1_ = VideoRecorder(env, video_path, enabled=video_path is not None)
-	# video_recorder_2 = None
-	# video_recorder_2_ = VideoRecorder(env, video_path, enabled=video_path is not None)
-	# video_recorder_3 = None
-	# video_recorder_3_ = VideoRecorder(env, video_path, enabled=video_path is not None)
 
 	QN = DQNetwork(state_size=2,hidden_size=hidden_size, learning_rate=learning_rate)
 
@@ -129,14 +122,16 @@ def DQN(env,gamma,num_episodes=100):
 		total_reward = 0
 		t = 0
 		done = False
+		if episode == 10 or episode == 100 or episode == 900:
+			video_path = 'videos/dqn_run{}_ep{}_.mp4'.format(1,episode)
+			video_recorder = VideoRecorder(env, video_path, enabled=video_path is not None)
+			# env.unwrapped.render()
+		else:
+			video_recorder = VideoRecorder(env, video_path, enabled=False)
+
 		while not done:
 			exp_step += 1
 			# # Watch sim
-			if episode == 10:
-				video_recorder = VideoRecorder(env, video_path, enabled=video_path is not None)
-				# env.unwrapped.render()
-				video_recorder.capture_frame()
-				video_recorder.close()
 
 			# Explore or Exploit
 			explore_prob = explore_stop + (explore_start - explore_stop) * np.exp(-decay_rate * exp_step)
@@ -149,6 +144,8 @@ def DQN(env,gamma,num_episodes=100):
 
 			# Take action
 			state_prime, reward, done, _ = env.step(action)
+
+			video_recorder.capture_frame()
 			z_prime = np.matmul(obs_mask, state_prime)
 			total_reward += reward
 
@@ -191,12 +188,13 @@ def DQN(env,gamma,num_episodes=100):
 
 			targets = rewards + gamma * np.max(Q_target, axis=1)
 			loss, _ = QN.sess.run([QN.loss, QN.optimizer],
-							   feed_dict={
-								   QN.inputs_: zs,
-								   QN.Q_target: targets,
-								   QN.actions_: actions
-							   })
+								  feed_dict={
+									  QN.inputs_: zs,
+									  QN.Q_target: targets,
+									  QN.actions_: actions
+								  })
 		G_0.append(total_reward)
+		video_recorder.close()
 
 	print("Max G_0 {}".format(max(G_0)))
 	QN.sess.close()
