@@ -3,10 +3,11 @@ import numpy as np
 import gym
 from matplotlib import pyplot as plt
 from dqn import DQN
-from drqn import DRQN
+from drqn import DRQN, Memory
 from reinforce import REINFORCE, PiApproximationWithNN, Baseline, VApproximationWithNN
 from reinforce_Buffer import REINFORCE as RF_Buffer, PiApproximationWithNN as Pi_Buffer, ReplayMemory #, Baseline, VApproximationWithNN
 # from MCTS import StateActionFeatureVectorWithTile,MCTS
+from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
 
 def test_DQN(env, run):
@@ -210,34 +211,106 @@ if __name__ == "__main__":
         drqn_rew, drqn_pi = test_DRQN(env, q)
         drqn_list.append(drqn_rew)
         drqn_policies.append(drqn_pi)
-    something = drqn_policies[0]
     drqn_result = np.mean(drqn_list, axis=0)
     smoothed_drqn_result = running_mean(drqn_result, 10)
 
-    # # Plot the experiment result
-    fig, ax = plt.subplots()
-    # ax.plot(np.arange(len(smoothed_dqn_result)), smoothed_dqn_result, label='DQN_smoothed')
-    # ax.plot(np.arange(len(dqn_result)), dqn_result, label='DQN', color='red', alpha=0.3)
-    ax.plot(np.arange(len(smoothed_drqn_result)), smoothed_drqn_result, label='DRQN_smoothed')
-    ax.plot(np.arange(len(drqn_result)), drqn_result, label='DRQN', color='grey', alpha=0.3)
-
-    ax.set_xlabel('iteration')
-    ax.set_ylabel('G_0')
-    ax.legend()
-
-    plt.show()
+    # # # Plot the experiment result
+    # fig, ax = plt.subplots()
+    # # ax.plot(np.arange(len(smoothed_dqn_result)), smoothed_dqn_result, label='DQN_smoothed')
+    # # ax.plot(np.arange(len(dqn_result)), dqn_result, label='DQN', color='red', alpha=0.3)
+    # ax.plot(np.arange(len(smoothed_drqn_result)), smoothed_drqn_result, label='DRQN_smoothed')
+    # ax.plot(np.arange(len(drqn_result)), drqn_result, label='DRQN', color='grey', alpha=0.3)
+    #
+    # ax.set_xlabel('iteration')
+    # ax.set_ylabel('G_0')
+    # ax.legend()
+    #
+    # plt.show()
 
     # # # Assuming I have the action
 
+    obs_mask = np.array([[1, 0, 0, 0], [0, 0, 1, 0]])
+    batch_size = 20  # Number of experiences stored in memory when initialized for first time
+    memory_size = 10000  # Number of experiences the memory can keep
+
+    # - - - - #
     env.reset()
-    # Random action
-    action = env.action_space.sample()
-    state, _, done, _ = env.step(action)
-    # Get action
-    action = some_code(state)
-    # Take action
-    state_prime, reward, done, _ = env.step(action)
-    state = state_prime
+    state, _, _, _ = env.step(env.action_space.sample())
+    z = np.matmul(obs_mask, state)
+    memory = Memory(max_size=memory_size)
+    # Pre-train to fill memory
+    for i in range(batch_size):
+        # # Watch sim
+        # env.render()
+
+        # Take random action
+        action = env.action_space.sample()
+        state_prime, reward, done, _ = env.step(action)
+        z_prime = np.matmul(obs_mask, state_prime)
+
+        if done:
+            # Sim is done so no state prime
+            state_prime = np.zeros(state.shape)
+            z_prime = np.matmul(obs_mask, state_prime)
+            memory.add((z, action, reward, z_prime))
+            # Start new episode
+            env.reset()
+            # Random step to start
+            state, reward, done, _ = env.step(env.action_space.sample())
+            z = np.matmul(obs_mask, state)
+        else:
+            # Add experience to memory
+            memory.add((z, action, reward, z_prime))
+            z = z_prime
+    # - - - - #
+
+    # - - - - #
+    total_reward = 0
+    env.reset()
+    # Take random step to start
+    state, reward, _, _ = env.step(env.action_space.sample())
+    z = np.matmul(obs_mask, state)
+    done = False
+    video_path = 'videos/drqn_best.mp4'
+    video_recorder = VideoRecorder(env, video_path, enabled=video_path is not None)
+    while not done:
+        # # Watch sim
+        # env.render()
+
+        # Action from Q Network
+        action = drqn_policies[0](z, memory)
+        # Take action
+        state_prime, reward, done, _ = env.step(action)
+        z_prime = np.matmul(obs_mask, state_prime)
+        # capture frame
+        video_recorder.capture_frame()
+        total_reward += reward
+
+        # Store transition
+        if done:
+            # Episode is over so no state prime
+            state_prime = np.zeros(state.shape)
+            z_prime = np.matmul(obs_mask, state_prime)
+            # Add experience to memory
+            memory.add((z, action, reward, z_prime))
+
+        else:
+            # Add experience to memory
+            memory.add((z, action, reward, z_prime))
+            z = z_prime
+    video_recorder.close()
+    # - - - - #
+
+
+
+    # # Random action
+    # action = env.action_space.sample()
+    # state, _, done, _ = env.step(action)
+    # # Get action
+    # action = some_code(state)
+    # # Take action
+    # state_prime, reward, done, _ = env.step(action)
+    # state = state_prime
 
 
 ###### Not sure #####
