@@ -12,12 +12,12 @@ from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
 def test_DQN(env, run):
     gamma = 1.0
-    return DQN(env, gamma, 200, run)
+    return DQN(env, gamma, 500, run)
 
 
 def test_DRQN(env, run):
     gamma = 1.0
-    return DRQN(env, gamma, 200, run)
+    return DRQN(env, gamma, 500, run)
 
 
 def test_MCTS():
@@ -227,8 +227,6 @@ if __name__ == "__main__":
     #
     # plt.show()
 
-    # # # Assuming I have the action
-
     obs_mask = np.array([[1, 0, 0, 0], [0, 0, 1, 0]])
     batch_size = 20  # Number of experiences stored in memory when initialized for first time
     memory_size = 10000  # Number of experiences the memory can keep
@@ -267,6 +265,7 @@ if __name__ == "__main__":
     # - - - - #
     total_reward = 0
     env.reset()
+    # memory = Memory(max_size=memory_size)
     # Take random step to start
     state, reward, _, _ = env.step(env.action_space.sample())
     z = np.matmul(obs_mask, state)
