@@ -4,35 +4,22 @@ import gym
 from matplotlib import pyplot as plt
 from dqn import DQN
 from drqn import DRQN, Memory
-from reinforce import REINFORCE, PiApproximationWithNN, Baseline, VApproximationWithNN
-from reinforce_Buffer import REINFORCE as RF_Buffer, PiApproximationWithNN as Pi_Buffer, ReplayMemory #, Baseline, VApproximationWithNN
-# from MCTS import StateActionFeatureVectorWithTile,MCTS
+from reinforce import REINFORCE, PiApproximationWithNN, Baseline
+from reinforce_Buffer import REINFORCE as RF_Buffer, PiApproximationWithNN as Pi_Buffer, ReplayMemory
 from gym.wrappers.monitoring.video_recorder import VideoRecorder
-
+import warnings
+warnings.filterwarnings('ignore')
 
 def test_DQN(env, run):
     gamma = 1.0
-    return DQN(env, gamma, 1000, run)
+    return DQN(env, gamma, 500, run)
 
 
 def test_DRQN(env, run):
     gamma = 1.0
-    return DRQN(env, gamma, 1000, run)
+    return DRQN(env, gamma, 500, run)
 
-
-def test_MCTS():
-    # X = StateActionFeatureVectorWithTile(
-    #     env.observation_space.low,
-    #     env.observation_space.high,
-    #     env.action_space.n,
-    #     num_tilings=10,
-    #     tile_width=np.array([.45, .035])
-    # )
-    pass
-
-
-def test_reinforce(runs, with_baseline):
-    env = gym.make("CartPole-v0")
+def test_reinforce(env,runs):
     gamma = 1.
     alpha = 3e-4
 
@@ -45,18 +32,12 @@ def test_reinforce(runs, with_baseline):
         env.action_space.n,
         alpha)
 
-    if with_baseline:
-        B = VApproximationWithNN(
-            env.observation_space.shape[0],
-            alpha)
-    else:
-        B = Baseline(0.)
+    B = Baseline(0.)
 
     return REINFORCE(env, gamma, 1000, runs, pi, B)
-    
 
-def test_reinforce_Buffer(with_baseline, mem_size, runs):
-    env = gym.make("CartPole-v0")
+
+def test_reinforce_Buffer(env, mem_size, runs):
     gamma = 1.
     alpha = 3e-4
 
@@ -70,14 +51,10 @@ def test_reinforce_Buffer(with_baseline, mem_size, runs):
         alpha,
         mem_size)
 
-    if with_baseline:
-        B = VApproximationWithNN(
-            env.observation_space.shape[0],
-            alpha)
-    else:
-        B = Baseline(0.)
+    B = Baseline(0.)
 
-    return RF_Buffer(env, gamma, 100, runs, pi, B, mem_size)
+    return RF_Buffer(env, gamma, 1000, runs, pi, B, mem_size)
+
 
 def play_obs(env,pi,num_episodes=10, video_path=None):
     # video_recorder = VideoRecorder(env,video_path,enabled=video_path is not None)
@@ -154,35 +131,36 @@ if __name__ == "__main__":
     #     print('***************************************')
     #     print("----------------> Without Buffer: {}".format(q))
     #     print('***************************************')
-    #     training_progress = test_reinforce(q, with_baseline=False)
+    #     training_progress = test_reinforce(env,q)
     #     without_buffer.append(training_progress[0])
     #     pi = training_progress[1]
     # without_buffer = np.mean(without_buffer, axis=0)
     # # play(env,pi)
     #
-    # # Test REINFORCE_buffer size 2 and 5
-    # with_buffer2 = []
-    # for q in range(num_iter):
-    #     print('***************************************')
-    #     print("----------------> With Buffer = 2: {}".format(q))
-    #     print('***************************************')
-    #     training_progress = test_reinforce_Buffer(False, 2, q)
-    #     with_buffer2.append(training_progress[0])
-    #     pi_buff = training_progress[1]
-    # with_buffer2 = np.mean(with_buffer2, axis=0)
-    # # play_with_buffer(env, pi_buff)
-
-    with_buffer5 = []
+    # Test REINFORCE_buffer size 2 and 5
+    with_buffer2 = []
     for q in range(num_iter):
         print('***************************************')
-        print("----------------> With Buffer = 5: {}".format(q))
+        print("----------------> With Buffer = 2: {}".format(q))
         print('***************************************')
-        training_progress = test_reinforce_Buffer(False, 5, q)
-        with_buffer5.append(training_progress[0])
+        training_progress = test_reinforce_Buffer(env, 2, q)
+        with_buffer2.append(training_progress[0])
         pi_buff = training_progress[1]
-    with_buffer5 = np.mean(with_buffer5, axis=0)
+    with_buffer2 = np.mean(with_buffer2, axis=0)
     env._max_episode_steps = 10000
     play_with_buffer(env, pi_buff)
+
+    # with_buffer5 = []
+    # for q in range(num_iter):
+    #     print('***************************************')
+    #     print("----------------> With Buffer = 5: {}".format(q))
+    #     print('***************************************')
+    #     training_progress = test_reinforce_Buffer(False, 5, q)
+    #     with_buffer5.append(training_progress[0])
+    #     pi_buff = training_progress[1]
+    # with_buffer5 = np.mean(with_buffer5, axis=0)
+    # env._max_episode_steps = 10000
+    # play_with_buffer(env, pi_buff)
     #
     # # Plot the experiment result
     # fig,ax = plt.subplots()

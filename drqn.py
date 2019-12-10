@@ -134,7 +134,7 @@ def DRQN(env, gamma, num_episodes=100, run=1):
 
 	exp_step = 0
 	G_0 = []
-	for episode in tqdm(range(num_episodes)):
+	for episode in range(num_episodes):
 		# Start new episode
 		env.reset()
 		# Take random step to start
