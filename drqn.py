@@ -4,6 +4,7 @@ import numpy as np
 from collections import deque
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
 class DRQNetwork:
 	def __init__(self, state_size=2, action_size=2, hidden_size=10, learning_rate=0.01,seq_length=5):
@@ -77,7 +78,7 @@ def running_mean(x, N):
 	return (cumsum[N:] - cumsum[:-N]) / N
 
 
-def DRQN(env,gamma,num_episodes=100):
+def DRQN(env, gamma, num_episodes=100, run=1):
 
 	# Exploration params
 	explore_start = 1.0
@@ -94,7 +95,8 @@ def DRQN(env,gamma,num_episodes=100):
 	memory_size = 10000  # Number of experiences the memory can keep
 	pretrain_length = batch_size
 
-	# Runs
+	# Video Path (dummy)
+	video_path = 'videos/dqn_run_ep_.mp4'
 
 	QN = DRQNetwork(state_size=2,hidden_size=hidden_size, learning_rate=learning_rate,seq_length=seq_length)
 
@@ -140,6 +142,12 @@ def DRQN(env,gamma,num_episodes=100):
 		total_reward = 0
 		t = 0
 		done = False
+		if episode == 10 or episode == 100 or episode == 900:
+			video_path = 'videos/dqn_run{}_ep{}_.mp4'.format(run, episode)
+			video_recorder = VideoRecorder(env, video_path, enabled=video_path is not None)
+			# env.unwrapped.render()
+		else:
+			video_recorder = VideoRecorder(env, video_path, enabled=False)
 		while not done:
 			exp_step += 1
 			# # Watch sim

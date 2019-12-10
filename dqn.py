@@ -4,7 +4,7 @@ import numpy as np
 from collections import deque
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from gym import Wrapper
+# from gym import Wrapper
 from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
 class DQNetwork:
@@ -59,7 +59,7 @@ def running_mean(x, N):
 	return (cumsum[N:] - cumsum[:-N]) / N
 
 
-def DQN(env,gamma,num_episodes=100):
+def DQN(env, gamma, num_episodes=100, run=1):
 
 	# Exploration params
 	explore_start = 1.0
@@ -75,10 +75,10 @@ def DQN(env,gamma,num_episodes=100):
 	memory_size = 10000  # Number of experiences the memory can keep
 	pretrain_length = batch_size
 
-	# Video Path
+	# Video Path (dummy)
 	video_path = 'videos/dqn_run_ep_.mp4'
 
-	QN = DQNetwork(state_size=2,hidden_size=hidden_size, learning_rate=learning_rate)
+	QN = DQNetwork(state_size=2, hidden_size=hidden_size, learning_rate=learning_rate)
 
 	obs_mask = np.array([[1, 0, 0, 0], [0, 0, 1, 0]])
 	env.reset()
@@ -123,7 +123,7 @@ def DQN(env,gamma,num_episodes=100):
 		t = 0
 		done = False
 		if episode == 10 or episode == 100 or episode == 900:
-			video_path = 'videos/dqn_run{}_ep{}_.mp4'.format(1,episode)
+			video_path = 'videos/dqn_run{}_ep{}_.mp4'.format(run, episode)
 			video_recorder = VideoRecorder(env, video_path, enabled=video_path is not None)
 			# env.unwrapped.render()
 		else:

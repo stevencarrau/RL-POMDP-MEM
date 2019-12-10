@@ -2,7 +2,6 @@ import sys
 import numpy as np
 import gym
 from matplotlib import pyplot as plt
-# import ffmpeg
 from dqn import DQN
 from drqn import DRQN
 from reinforce import REINFORCE, PiApproximationWithNN, Baseline, VApproximationWithNN
@@ -10,13 +9,13 @@ from reinforce_Buffer import REINFORCE as RF_Buffer, PiApproximationWithNN as Pi
 # from MCTS import StateActionFeatureVectorWithTile,MCTS
 
 #
-def test_DQN(env):
+def test_DQN(env, run):
     gamma = 1.0
-    return DQN(env, gamma, 100)
+    return DQN(env, gamma, 200, run)
 
-def test_DRQN(env):
+def test_DRQN(env, run):
     gamma = 1.0
-    return DRQN(env, gamma, 100)
+    return DRQN(env, gamma, 200, run)
 
 
 def test_MCTS():
@@ -77,7 +76,7 @@ def test_reinforce_Buffer(with_baseline,mem_size):
 
     return RF_Buffer(env,gamma,10000,pi,B,mem_size)
 
-def play_obs(env,pi,num_episodes=10,video_path=None):
+def play_obs(env,pi,num_episodes=10, video_path=None):
     # video_recorder = VideoRecorder(env,video_path,enabled=video_path is not None)
     obs_mask = np.array([[1, 0, 0, 0], [0, 0, 1, 0]])
     for e_i in range(num_episodes):
@@ -197,21 +196,21 @@ if __name__ == "__main__":
     dqn_list = []
     dqn_policies = []
     for q in range(num_iter):
-        dqn_rew, dqn_pi = test_DQN(env)
+        dqn_rew, dqn_pi = test_DQN(env, q)
         dqn_list.append(dqn_rew)
         dqn_policies.append(dqn_pi)
     dqn_result = np.mean(dqn_list,axis=0)
     smoothed_dqn_result = running_mean(dqn_result, 10)
 
-    # # Test DRQN
-    # drqn_list = []
-    # drqn_policies = []
-    # for q in range(num_iter):
-    #     drqn_rew, drqn_pi = test_DRQN(env)
-    #     drqn_list.append(drqn_rew)
-    #     drqn_policies.append(drqn_pi)
-    # drqn_result = np.mean(drqn_list, axis=0)
-    # smoothed_drqn_result = running_mean(drqn_result, 10)
+    # Test DRQN
+    drqn_list = []
+    drqn_policies = []
+    for q in range(num_iter):
+        drqn_rew, drqn_pi = test_DRQN(env, q)
+        drqn_list.append(drqn_rew)
+        drqn_policies.append(drqn_pi)
+    drqn_result = np.mean(drqn_list, axis=0)
+    smoothed_drqn_result = running_mean(drqn_result, 10)
 
     # # # Plot the experiment result
     # fig,ax = plt.subplots()
@@ -222,9 +221,9 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
     ax.plot(np.arange(len(smoothed_dqn_result)), smoothed_dqn_result, label='DQN_smoothed')
     ax.plot(np.arange(len(dqn_result)), dqn_result, label='DQN', color='red', alpha=0.3)
-    # ax.plot(np.arange(len(smoothed_drqn_result)), smoothed_drqn_result, label='DRQN_smoothed')
-    # ax.plot(np.arange(len(drqn_result)), drqn_result, label='DRQN', color='grey', alpha=0.3)
-    #
+    ax.plot(np.arange(len(smoothed_drqn_result)), smoothed_drqn_result, label='DRQN_smoothed')
+    ax.plot(np.arange(len(drqn_result)), drqn_result, label='DRQN', color='grey', alpha=0.3)
+
     ax.set_xlabel('iteration')
     ax.set_ylabel('G_0')
     ax.legend()
