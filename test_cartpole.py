@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import gym
 from matplotlib import pyplot as plt
-# from gym.wrappers import VideoRecorder
+# import ffmpeg
 from dqn import DQN
 from drqn import DRQN
 from reinforce import REINFORCE, PiApproximationWithNN, Baseline, VApproximationWithNN
@@ -12,12 +12,11 @@ from reinforce_Buffer import REINFORCE as RF_Buffer, PiApproximationWithNN as Pi
 #
 def test_DQN(env):
     gamma = 1.0
-    
-    return DQN(env,gamma,5000)
+    return DQN(env, gamma, 100)
 
 def test_DRQN(env):
     gamma = 1.0
-    return DRQN(env,gamma,5000)
+    return DRQN(env, gamma, 100)
 
 
 def test_MCTS():
@@ -144,7 +143,7 @@ def running_mean(x, N):
     return (cumsum[N:] - cumsum[:-N]) / N
 
 if __name__ == "__main__":
-    num_iter = 5
+    num_iter = 1
     env = gym.make("CartPole-v0")
     #
     # without_buffer = []
@@ -202,15 +201,17 @@ if __name__ == "__main__":
         dqn_list.append(dqn_rew)
         dqn_policies.append(dqn_pi)
     dqn_result = np.mean(dqn_list,axis=0)
+    smoothed_dqn_result = running_mean(dqn_result, 10)
 
-    # Test DRQN
-    drqn_list = []
-    drqn_policies = []
-    for q in range(num_iter):
-        drqn_rew, drqn_pi = test_DRQN(env)
-        drqn_list.append(drqn_rew)
-        drqn_policies.append(drqn_pi)
-    drqn_result = np.mean(drqn_list, axis=0)
+    # # Test DRQN
+    # drqn_list = []
+    # drqn_policies = []
+    # for q in range(num_iter):
+    #     drqn_rew, drqn_pi = test_DRQN(env)
+    #     drqn_list.append(drqn_rew)
+    #     drqn_policies.append(drqn_pi)
+    # drqn_result = np.mean(drqn_list, axis=0)
+    # smoothed_drqn_result = running_mean(drqn_result, 10)
 
     # # # Plot the experiment result
     # fig,ax = plt.subplots()
@@ -218,12 +219,70 @@ if __name__ == "__main__":
 
 
     # Plot the experiment result
-    fig,ax = plt.subplots()
-    ax.plot(np.arange(len(dqn_result)),dqn_result, label='DQN')
-    ax.plot(np.arange(len(drqn_result)),drqn_result, label='DRQN')
+    fig, ax = plt.subplots()
+    ax.plot(np.arange(len(smoothed_dqn_result)), smoothed_dqn_result, label='DQN_smoothed')
+    ax.plot(np.arange(len(dqn_result)), dqn_result, label='DQN', color='red', alpha=0.3)
+    # ax.plot(np.arange(len(smoothed_drqn_result)), smoothed_drqn_result, label='DRQN_smoothed')
+    # ax.plot(np.arange(len(drqn_result)), drqn_result, label='DRQN', color='grey', alpha=0.3)
     #
     ax.set_xlabel('iteration')
     ax.set_ylabel('G_0')
     ax.legend()
 
     plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -4,6 +4,8 @@ import numpy as np
 from collections import deque
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from gym import Wrapper
+from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
 class DQNetwork:
 	def __init__(self, state_size=4, action_size=2, hidden_size=10, learning_rate=0.01):
@@ -73,7 +75,15 @@ def DQN(env,gamma,num_episodes=100):
 	memory_size = 10000  # Number of experiences the memory can keep
 	pretrain_length = batch_size
 
-	# Runs
+	# Video Path
+	video_path = 'videos/dqn_run_ep_.mp4'
+	# videos = []
+	# video_recorder_1 = None
+	# video_recorder_1_ = VideoRecorder(env, video_path, enabled=video_path is not None)
+	# video_recorder_2 = None
+	# video_recorder_2_ = VideoRecorder(env, video_path, enabled=video_path is not None)
+	# video_recorder_3 = None
+	# video_recorder_3_ = VideoRecorder(env, video_path, enabled=video_path is not None)
 
 	QN = DQNetwork(state_size=2,hidden_size=hidden_size, learning_rate=learning_rate)
 
@@ -122,7 +132,11 @@ def DQN(env,gamma,num_episodes=100):
 		while not done:
 			exp_step += 1
 			# # Watch sim
-			# env.render()
+			if episode == 10:
+				video_recorder = VideoRecorder(env, video_path, enabled=video_path is not None)
+				# env.unwrapped.render()
+				video_recorder.capture_frame()
+				video_recorder.close()
 
 			# Explore or Exploit
 			explore_prob = explore_stop + (explore_start - explore_stop) * np.exp(-decay_rate * exp_step)
