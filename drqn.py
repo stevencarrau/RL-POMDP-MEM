@@ -47,6 +47,7 @@ class DRQNetwork:
 			if (t_i[3] == np.zeros(self.state_size)).all(): break
 			in_seq.append(t_i[0])
 			i += 1
+		in_seq.reverse()
 		in_seq.append(z)
 		s = tf.keras.preprocessing.sequence.pad_sequences(np.array(in_seq).T, maxlen=self.seq_length,
 													  dtype='float64', padding='pre', truncating='pre', value=0.0).reshape(1,-1,self.state_size)

@@ -264,6 +264,7 @@ if __name__ == "__main__":
 
     # - - - - #
     total_reward = 0
+    env._max_episode_steps = 10000
     env.reset()
     # memory = Memory(max_size=memory_size)
     # Take random step to start
@@ -297,6 +298,7 @@ if __name__ == "__main__":
             # Add experience to memory
             memory.add((z, action, reward, z_prime))
             z = z_prime
+    print('Elapsed steps {}'.format(env._elapsed_steps))add property
     video_recorder.close()
     # - - - - #
 
