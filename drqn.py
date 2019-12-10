@@ -29,7 +29,7 @@ class DRQNetwork:
 		self.layer2 = tf.contrib.layers.fully_connected(lstm_layer, hidden_size)
 		self.output = tf.contrib.layers.fully_connected(self.layer2, action_size, activation_fn=None)
 
-		self.actSel = tf.argmax(self.output,1)
+		self.actSel = tf.argmax(self.output, 1)
 
 		# Train with loss (Q_target - Q)^2
 		self.Q = tf.reduce_sum(tf.multiply(self.output, one_hot_actions), axis=1)
@@ -39,7 +39,7 @@ class DRQNetwork:
 		self.sess = tf.InteractiveSession()
 		self.sess.run(self.init)
 
-	def __call__(self, z,memory):
+	def __call__(self, z, memory):
 		i = 0
 		in_seq = []
 		while i < self.seq_length-1:
