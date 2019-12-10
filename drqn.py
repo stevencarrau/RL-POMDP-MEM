@@ -218,5 +218,5 @@ def DRQN(env, gamma, num_episodes=100, run=1):
 		video_recorder.close()
 
 	print("Max G_0 {}".format(max(G_0)))
-	QN.sess.close()
+	# QN.sess.close()
 	return G_0, QN
