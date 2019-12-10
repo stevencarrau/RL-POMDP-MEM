@@ -2,6 +2,7 @@ from typing import Iterable
 import numpy as np
 import tensorflow as tf
 from collections import namedtuple
+from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
 class ReplayMemory:
     def __init__(self,config):
@@ -154,6 +155,7 @@ def REINFORCE(
     env, #open-ai environment
     gamma:float,
     num_episodes:int,
+    run:int,
     pi:PiApproximationWithNN,
     V:Baseline,
     mem_size:int) -> Iterable[float]:
@@ -169,6 +171,9 @@ def REINFORCE(
     output:
         a list that includes the G_0 for every episodes.
     """
+    # Video Path (dummy)
+    video_path = 'videos/reinforce_VelEst_run_ep_.mp4'
+
     G_0 = []
     struc = namedtuple("struc",['mem_size','obs_dims','dt'])
     config = struc(mem_size,2,env.env.tau)
@@ -176,17 +181,27 @@ def REINFORCE(
     pi.add_config(config)
     obs_mask = np.array([[1,0,0,0],[0,0,1,0]])
     for e_i in range(num_episodes):
-        if G_0:print("{} - {}".format(e_i,max(G_0)))
+        # if G_0:print("{} - {}".format(e_i,max(G_0)))
         s = env.reset()
         z = np.matmul(obs_mask,s)
         rep.add(z, 0, 0)
         rep_z = rep.getState()
         done = False
         traj = []
+        # Video recording setup #
+        if e_i == 10 or e_i == 100 or e_i == 900:
+            video_path = 'videos/reinforce_VelEst_run{}_ep{}_.mp4'.format(run, e_i)
+            video_recorder = VideoRecorder(env, video_path, enabled=video_path is not None)
+            # env.unwrapped.render()
+        else:
+            video_recorder = VideoRecorder(env, video_path, enabled=False)
         while not done:
             a = pi(rep_z)
             # if a ==1: print("A1")
             s_prime, r_t, done, _ = env.step(a)
+            # capture frame
+            video_recorder.capture_frame()
+            # Mask
             z_prime = np.matmul(obs_mask, s_prime)
             rep.add(z_prime,r_t,a)
             rep_zprime = rep.getState()
@@ -199,6 +214,7 @@ def REINFORCE(
             delta = G-V(t_tup[0])
             V.update(t_tup[0],G)
             pi.update(t_tup[0],t_tup[1],gamma**i,delta)
+        video_recorder.close()
 
     return  G_0,pi
 
