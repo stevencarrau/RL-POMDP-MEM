@@ -144,7 +144,7 @@ def DQN(env, gamma, num_episodes=100, run=1):
 
 			# Take action
 			state_prime, reward, done, _ = env.step(action)
-
+			# capture frame
 			video_recorder.capture_frame()
 			z_prime = np.matmul(obs_mask, state_prime)
 			total_reward += reward

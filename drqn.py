@@ -96,7 +96,7 @@ def DRQN(env, gamma, num_episodes=100, run=1):
 	pretrain_length = batch_size
 
 	# Video Path (dummy)
-	video_path = 'videos/dqn_run_ep_.mp4'
+	video_path = 'videos/drqn_run_ep_.mp4'
 
 	QN = DRQNetwork(state_size=2,hidden_size=hidden_size, learning_rate=learning_rate,seq_length=seq_length)
 
@@ -143,7 +143,7 @@ def DRQN(env, gamma, num_episodes=100, run=1):
 		t = 0
 		done = False
 		if episode == 10 or episode == 100 or episode == 900:
-			video_path = 'videos/dqn_run{}_ep{}_.mp4'.format(run, episode)
+			video_path = 'videos/drqn_run{}_ep{}_.mp4'.format(run, episode)
 			video_recorder = VideoRecorder(env, video_path, enabled=video_path is not None)
 			# env.unwrapped.render()
 		else:
@@ -160,10 +160,12 @@ def DRQN(env, gamma, num_episodes=100, run=1):
 				action = env.action_space.sample()
 			else:
 				# Action from Q Network
-				action = QN(z,memory)
+				action = QN(z, memory)
 
 			# Take action
 			state_prime, reward, done, _ = env.step(action)
+			# capture frame
+			video_recorder.capture_frame()
 			z_prime = np.matmul(obs_mask, state_prime)
 			total_reward += reward
 
@@ -213,6 +215,7 @@ def DRQN(env, gamma, num_episodes=100, run=1):
 								   QN.actions_: actions
 							   })
 		G_0.append(total_reward)
+		video_recorder.close()
 
 	print("Max G_0 {}".format(max(G_0)))
 	QN.sess.close()
