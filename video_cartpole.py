@@ -11,7 +11,7 @@ from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
 def test_DQN(env, run):
 	gamma = 1.0
-	return DQN(env, gamma, 1000, run)
+	return DQN(env, gamma, 200, run)
 
 
 def test_DRQN(env, run):
@@ -156,29 +156,7 @@ if __name__ == "__main__":
 	env._max_episode_steps = 10000
 	play_with_buffer(env, pi_buff)
 	env._max_episode_steps = 200
-	# with_buffer5 = []
-	# for q in range(num_iter):
-	#     print('***************************************')
-	#     print("----------------> With Buffer = 5: {}".format(q))
-	#     print('***************************************')
-	#     training_progress = test_reinforce_Buffer(False, 5, q)
-	#     with_buffer5.append(training_progress[0])
-	#     pi_buff = training_progress[1]
-	# with_buffer5 = np.mean(with_buffer5, axis=0)
-	# env._max_episode_steps = 10000
-	# play_with_buffer(env, pi_buff)
-	#
-	# # Plot the experiment result
-	# fig,ax = plt.subplots()
-	# ax.plot(np.arange(len(without_buffer)), without_buffer, label='No Buffer')
-	# ax.plot(np.arange(len(with_buffer2)), with_buffer2, label='Buffer - Size 2')
-	# ax.plot(np.arange(len(with_buffer5)), with_buffer5, label='Buffer - Size 5')
-	# #
-	# ax.set_xlabel('iteration')
-	# ax.set_ylabel('G_0')
-	# ax.legend()
-	#
-	# plt.show()
+
 
 	# ##########################################################################
 	# # Test DQN
