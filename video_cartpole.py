@@ -11,7 +11,7 @@ from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
 def test_DQN(env, run):
 	gamma = 1.0
-	return DQN(env, gamma, 200, run)
+	return DQN(env, gamma, 1000, run)
 
 
 def test_DRQN(env, run):
@@ -83,6 +83,7 @@ def play_with_buffer(env, pi, num_episodes=3, video_path=None):
 	video_path = 'videos/REINFORCE_best.mp4'
 	video_recorder = VideoRecorder(env, video_path, enabled=video_path is not None)
 	rep = ReplayMemory(pi.config)
+	rep.add(0,0,0)
 	obs_mask = np.array([[1, 0, 0, 0], [0, 0, 1, 0]])
 	for e_i in range(num_episodes):
 		s = env.reset()
@@ -96,7 +97,8 @@ def play_with_buffer(env, pi, num_episodes=3, video_path=None):
 			z_prime = np.matmul(obs_mask, s_prime)
 			rep.add(z_prime, r_t, a)
 			video_recorder.capture_frame()
-		# env.render()
+		print('Elapsed steps {}'.format(env._elapsed_steps))
+	# env.render()
 		# s = s_prime
 		# z = z_prime
 	video_recorder.close()
@@ -129,7 +131,7 @@ def running_mean(x, N):
 
 
 if __name__ == "__main__":
-	num_iter = 2
+	num_iter = 5
 	env = gym.make("CartPole-v0")
 
 	# without_buffer = []
@@ -198,6 +200,7 @@ if __name__ == "__main__":
 	memory_size = 10000  # Number of experiences the memory can keep
 
 	# - - - - #
+	env._max_episode_steps = 10000
 	env.reset()
 	state, _, _, _ = env.step(env.action_space.sample())
 	z = np.matmul(obs_mask, state)
@@ -264,7 +267,7 @@ if __name__ == "__main__":
 				# Add experience to memory
 				memory.add((z, action, reward, z_prime))
 				z = z_prime
-	print('Elapsed steps {}'.format(env._elapsed_steps))
+		print('Elapsed steps {}'.format(env._elapsed_steps))
 	video_recorder.close()
 # - - - - #
 
