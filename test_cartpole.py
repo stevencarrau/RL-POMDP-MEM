@@ -142,63 +142,63 @@ def running_mean(x, N):
     return (cumsum[N:] - cumsum[:-N]) / N
 
 if __name__ == "__main__":
-    num_iter = 1
+    num_iter = 5
     env = gym.make("CartPole-v0")
 
-    # without_buffer = []
-    # print('***************************************')
-    # for q in range(num_iter):
-    #     print("----------------> Without Buffer: {}".format(q))
-    #     training_progress = test_reinforce(env, q)
-    #     without_buffer.append(training_progress[0])
-    #     pi = training_progress[1]
-    # print('***************************************')
-    # without_buffer = np.mean(without_buffer, axis=0)
+    without_buffer = []
+    print('***************************************')
+    for q in range(num_iter):
+        print("----------------> Without Buffer: {}".format(q))
+        training_progress = test_reinforce(env, q)
+        without_buffer.append(training_progress[0])
+        pi = training_progress[1]
+    print('***************************************')
+    without_buffer = np.mean(without_buffer, axis=0)
+
+    # Test REINFORCE_buffer size 2 and 5
+    with_buffer2 = []
+    print('***************************************')
+    for q in range(num_iter):
+        print("----------------> With Buffer = 2: {}".format(q))
+        training_progress = test_reinforce_Buffer(env, 2, q)
+        with_buffer2.append(training_progress[0])
+        pi_buff = training_progress[1]
+    print('***************************************')
+    with_buffer2 = np.mean(with_buffer2, axis=0)
+
+    with_buffer5 = []
+    print('***************************************')
+    for q in range(num_iter):
+        print("----------------> With Buffer = 5: {}".format(q))
+        training_progress = test_reinforce_Buffer(env, 5, q)
+        with_buffer5.append(training_progress[0])
+        pi_buff = training_progress[1]
+    print('***************************************')
+    with_buffer5 = np.mean(with_buffer5, axis=0)
+
+    # Test REINFORCE_estimate
+    with_est = []
+    print('***************************************')
+    for q in range(num_iter):
+        print("----------------> With Estiamte: {}".format(q))
+        training_progress = test_reinforce_Estimate(env, 2, q)
+        with_est.append(training_progress[0])
+        pi_est = training_progress[1]
+    print('***************************************')
+    with_est = np.mean(with_est, axis=0)
     #
-    # # Test REINFORCE_buffer size 2 and 5
-    # with_buffer2 = []
-    # print('***************************************')
-    # for q in range(num_iter):
-    #     print("----------------> With Buffer = 2: {}".format(q))
-    #     training_progress = test_reinforce_Buffer(env, 2, q)
-    #     with_buffer2.append(training_progress[0])
-    #     pi_buff = training_progress[1]
-    # print('***************************************')
-    # with_buffer2 = np.mean(with_buffer2, axis=0)
+    # # Plot the experiment result
+    fig,ax = plt.subplots()
+    ax.plot(np.arange(len(without_buffer)), without_buffer, label='No Buffer')
+    ax.plot(np.arange(len(with_buffer2)), with_buffer2, label='Buffer - Size 2')
+    ax.plot(np.arange(len(with_buffer5)), with_buffer5, label='Buffer - Size 5')
+    ax.plot(np.arange(len(with_est)), with_est, label='Estimate')
     #
-    # with_buffer5 = []
-    # print('***************************************')
-    # for q in range(num_iter):
-    #     print("----------------> With Buffer = 5: {}".format(q))
-    #     training_progress = test_reinforce_Buffer(env, 5, q)
-    #     with_buffer5.append(training_progress[0])
-    #     pi_buff = training_progress[1]
-    # print('***************************************')
-    # with_buffer5 = np.mean(with_buffer5, axis=0)
-    #
-    # # Test REINFORCE_estimate
-    # with_est = []
-    # print('***************************************')
-    # for q in range(num_iter):
-    #     print("----------------> With Estiamte: {}".format(q))
-    #     training_progress = test_reinforce_Estimate(env, 2, q)
-    #     with_est.append(training_progress[0])
-    #     pi_est = training_progress[1]
-    # print('***************************************')
-    # with_est = np.mean(with_est, axis=0)
-    # #
-    # # # Plot the experiment result
-    # fig,ax = plt.subplots()
-    # ax.plot(np.arange(len(without_buffer)), without_buffer, label='No Buffer')
-    # ax.plot(np.arange(len(with_buffer2)), with_buffer2, label='Buffer - Size 2')
-    # ax.plot(np.arange(len(with_buffer5)), with_buffer5, label='Buffer - Size 5')
-    # ax.plot(np.arange(len(with_est)), with_est, label='Estimate')
-    # #
-    # ax.set_xlabel('iteration')
-    # ax.set_ylabel('G_0')
-    # ax.legend()
-    #
-    # plt.show()
+    ax.set_xlabel('iteration')
+    ax.set_ylabel('G_0')
+    ax.legend()
+
+    plt.show()
 
     # ##########################################################################
     # # Test DQN
