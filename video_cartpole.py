@@ -146,18 +146,18 @@ if __name__ == "__main__":
 	# # play(env,pi)
 	#
 	# Test REINFORCE_buffer size 2 and 5
-	with_est = []
-	for q in range(num_iter):
-		print('***************************************')
-		print("----------------> With Buffer = 2: {}".format(q))
-		print('***************************************')
-		training_progress = test_reinforce_Estimate(False, 2, q)
-		with_est.append(training_progress[0])
-		pi_buff = training_progress[1]
-	with_buffer2 = np.mean(with_est, axis=0)
-	env._max_episode_steps = 10000
-	play_with_buffer(env, pi_buff)
-	env._max_episode_steps = 200
+	# with_est = []
+	# for q in range(num_iter):
+	# 	print('***************************************')
+	# 	print("----------------> With Buffer = 2: {}".format(q))
+	# 	print('***************************************')
+	# 	training_progress = test_reinforce_Estimate(False, 2, q)
+	# 	with_est.append(training_progress[0])
+	# 	pi_buff = training_progress[1]
+	# with_buffer2 = np.mean(with_est, axis=0)
+	# env._max_episode_steps = 10000
+	# play_with_buffer(env, pi_buff)
+	# env._max_episode_steps = 200
 
 
 	# ##########################################################################
@@ -179,7 +179,7 @@ if __name__ == "__main__":
 		drqn_list.append(drqn_rew)
 		drqn_policies.append(drqn_pi)
 	drqn_result = np.mean(drqn_list, axis=0)
-	best_pol = np.argmax(np.mean(drqn_list,axis=1))
+	best_pol = np.argmax(np.mean(np.array(drqn_list)[:,-100:],axis=1))
 	smoothed_drqn_result = running_mean(drqn_result, 10)
 	#
 	# # # Plot the experiment result
