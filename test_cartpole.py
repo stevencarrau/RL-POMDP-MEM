@@ -13,12 +13,12 @@ warnings.filterwarnings('ignore')
 
 def test_DQN(env, run):
     gamma = 1.0
-    return DQN(env, gamma, 300, run)
+    return DQN(env, gamma, 1000, run)
 
 
 def test_DRQN(env, run):
     gamma = 1.0
-    return DRQN(env, gamma, 300, run)
+    return DRQN(env, gamma, 1000, run)
 
 def test_reinforce(env,runs):
     gamma = 1.
